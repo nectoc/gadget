@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+    <ModulePrefs title="Test Real time gadgets"
+                 author="WSO2 DAS"
+                 height="230"
+                 scrolling="true">
+    </ModulePrefs>
+    <UserPref name="dataSource"
+              display_name="Data Source"
+              default_value="/portal/gadgets/bar-chart/datasource/dataFile4.jag">
+              
+    </UserPref>
+    <Content type="html">
+        <![CDATA[
+             <html>
+             <head>
+
+             	<style>
+				 	.boxed{
+						  border: 1px solid green ;
+						  background-color: cyan;
+						}
+
+					.boxed2{
+						  border: 1px solid green ;
+						  background-color: grey;
+						}
+
+					
+					.box:nth-child(even) {border: 1px solid green ;background-color: green}
+					.box:nth-child(odd) {border: 1px solid green ;background-color: olive}
+
+
+
+				</style>
+
+                <script language="javascript" type="text/javascript" src="outputAdapterUiLibrary.js"></script>
+                <script language="javascript" type="text/javascript" src="js/jquery.js"></script>
+                <script>
+
+                	var stream = "TestStream1";
+                	var version = "1.0.0";
+
+
+                    subscribe(stream, version, "10", "carbon.super",
+                    onRealTimeEventSuccessRecieval, onRealTimeEventErrorRecieval, location.hostname, location.port,'WEBSOCKET', "SECURED");
+
+
+				   	var queue = new Queue();
+   
+                    function onRealTimeEventSuccessRecieval(streamId, data) {
+                    	var item;
+						queue = getAlerts(data,queue);
+						display(queue);
+
+                    };
+
+
+                    function onRealTimeEventErrorRecieval(dataError) {
+                        console.log("Error occurred " + dataError);
+                    };
+
+
+                    function getAlerts(data,queue){
+
+	                    if(queue.getLength()<10){
+		                    console.log(data[0][1]);
+		                    queue.enqueue(data);
+
+	                    }else if(queue.getLength()==10){
+	                    	console.log("entering else");
+	                    	var i = queue.remove();
+	                    	console.log("Removed item :" + i);
+	                    	console.log(queue.getLength());
+	                    	queue.enqueue(data);
+	                    	console.log(data);
+
+	                    }
+	                    	return queue;
+
+                    }
+
+                   function display(queue){
+
+                   			var div = document.getElementById("placeholder");
+                   			
+
+                   			var currentClass = div.className;
+                   			console.log(currentClass);
+                   			
+                   			var set = queue.getInverse();
+                   			div.innerHTML = "";
+
+                   			var test = document.createElement('div');
+      
+                   			for(i=set.length-1; i>=0; i--){ 
+
+                   				switch (i%2) {
+								    case 0:
+								    
+								       $('#placeholder').append('<div id="myDiv'+i+'">' + set[i] +'</div>');
+								       $("#myDiv"+i).css('background-color', '#FBF6D9');
+								   		 
+								        break;
+
+								    case 1:
+
+									$('#placeholder').append('<div id="myDiv'+i+'">' + set[i] +'</div>');
+								       $("#myDiv"+i).css('background-color', '#FFF380');
+                   						
+								        break;
+								 }
+	                   				
+                   		}
+                   }
+
+                    function Queue(){
+
+						  // initialize the queue and offset
+						  var queue  = [];
+						  var offset = 0;
+						  
+
+						  // Returns the length of the queue.
+						  this.getLength = function(){
+						    return (queue.length - offset);
+						  }
+
+						  // Returns true if the queue is empty, and false otherwise.
+						  this.isEmpty = function(){
+						    return (queue.length == 0);
+						  }
+
+						  /* Enqueues the specified item. The parameter is:
+						   *
+						   * item - the item to enqueue
+						   */
+						  this.enqueue = function(item){
+						    queue.push(item);
+						  }
+
+					
+						  /* Get all the available elements in queue (ascending order)
+						   */
+						  this.getAll = function(){
+						  	var arr=[];
+						    for(i=0;i<queue.length;i++){
+						    	arr[i]=queue[i];
+						    }
+						    return arr;
+						  }
+
+						  this.getInverse=function(){
+						  	var arr=[];
+						  	for(i=queue.length-1;i>=0;i--){
+						  		console.log("item in queue :" + queue[i] )
+						    	arr[i]=queue[i];
+
+						    }
+						    return arr;
+						  }
+
+						  /* Dequeues an item and returns it. 
+						   */
+						  this.remove=function(){
+						  var i = queue.shift();
+						  return i;
+						  }
+
+						  /* Returns the item at the front of the queue (without dequeuing it). If the
+						   * queue is empty then undefined is returned.
+						   */
+						  this.peek = function(){
+						    return (queue.length > 0 ? queue[offset] : undefined);
+						  }
+
+						}
+                </script>
+            </head>
+
+            <body> 
+                 <div id="placeholder"></div>
+               
+            </body>
+            </html>
+    ]]>
+    </Content>
+</Module>
